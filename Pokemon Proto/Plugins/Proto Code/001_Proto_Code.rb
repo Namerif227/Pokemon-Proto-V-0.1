@@ -51,8 +51,6 @@ module ProtoCode
 #-----------------------------------------------------------------------------
 PROTO_CURSOR_GRAPHIC = "Graphics/UI/Battle/cursor_proto"
 
-# If true, the existing Mega special button cursor will use cursor_proto.png.
-REPLACE_MEGA_CURSOR_WITH_PROTO = true
 #-----------------------------------------------------------------------------
 # Permanently consumes a Proto Capsule.
 # This is stronger than normal pbConsumeItem because Proto Capsules should behave
@@ -386,7 +384,13 @@ end
     proto_possible = pbCanProtoCode?(idxBattler)
     special_possible = mega_possible || proto_possible
 
-    @scene.pbFightMenu(idxBattler, special_possible) do |cmd|
+# Tell the Fight Menu which special-button graphic to use.
+# Proto takes priority here, matching the toggle logic below.
+ @scene.pbSetProtoCodeButton(
+  proto_possible || pbRegisteredProtoCode?(idxBattler)
+)
+
+@scene.pbFightMenu(idxBattler, special_possible) do |cmd|
       case cmd
       when -1   # Cancel
         pbUnregisterProtoCode(idxBattler)
@@ -436,6 +440,103 @@ end
 # Move type hooks
 #===============================================================================
 class Battle::Move
+  #===============================================================================
+# Proto Code Fight Menu cursor
+#-------------------------------------------------------------------------------
+# Loads cursor_proto.png separately instead of globally replacing cursor_mega.
+#
+# cursor_proto.png must contain two vertically stacked frames:
+#   Top half    = available/unpressed
+#   Bottom half = selected/pressed
+#===============================================================================
+
+class Battle::Scene::FightMenu
+  unless method_defined?(:proto_code_cursor_initialize)
+    alias proto_code_cursor_initialize initialize
+  end
+
+  def initialize(viewport, z)
+    proto_code_cursor_initialize(viewport, z)
+
+    proto_path = ProtoCode::PROTO_CURSOR_GRAPHIC
+
+    # Fall back to the Mega graphic instead of crashing if the Proto file
+    # cannot be found.
+    if !pbResolveBitmap(proto_path)
+      proto_path = "Graphics/UI/Battle/cursor_mega"
+    end
+
+    @protoCodeBitmap = AnimatedBitmap.new(proto_path)
+    @protoCodeButton = false
+  end
+
+  unless method_defined?(:proto_code_cursor_dispose)
+    alias proto_code_cursor_dispose dispose
+  end
+
+  def dispose
+    @protoCodeBitmap&.dispose
+    @protoCodeBitmap = nil
+    proto_code_cursor_dispose
+  end
+
+  #---------------------------------------------------------------------------
+  # Changes whether the special button uses the Proto or Mega graphic.
+  #---------------------------------------------------------------------------
+  def proto_code_button=(value)
+    value = !!value
+    return if @protoCodeButton == value
+
+    @protoCodeButton = value
+    refreshMegaEvolutionButton
+  end
+
+  #---------------------------------------------------------------------------
+  # Replaces only the special button's refresh logic.
+  #---------------------------------------------------------------------------
+  def refreshMegaEvolutionButton
+    return if !Battle::Scene::FightMenu::USE_GRAPHICS
+    return if !@megaButton
+
+    special_bitmap = if @protoCodeButton && @protoCodeBitmap
+                       @protoCodeBitmap
+                     else
+                       @megaEvoBitmap
+                     end
+
+    return if !special_bitmap
+
+    @megaButton.bitmap = special_bitmap.bitmap
+
+    # Both cursor images contain two vertically stacked states.
+    button_height = special_bitmap.height / 2
+    frame = (@mode == 2) ? 1 : 0
+
+    @megaButton.src_rect.x      = 0
+    @megaButton.src_rect.y      = frame * button_height
+    @megaButton.src_rect.width  = special_bitmap.width
+    @megaButton.src_rect.height = button_height
+
+    @megaButton.x = self.x + ((@shiftMode > 0) ? 204 : 120)
+    @megaButton.y = self.y - button_height
+    @megaButton.z = self.z - 1
+
+    @visibility["megaButton"] = (@mode > 0)
+  end
+end
+
+#===============================================================================
+# Battle scene helper
+#===============================================================================
+class Battle::Scene
+  def pbSetProtoCodeButton(value)
+    fight_window = @sprites["fightWindow"]
+    return if !fight_window
+    return if !fight_window.respond_to?(:proto_code_button=)
+
+    fight_window.proto_code_button = value
+  end
+end
   #-----------------------------------------------------------------------------
   # Fight Menu display type.
   #-----------------------------------------------------------------------------
@@ -464,30 +565,5 @@ class Battle::Move
     # Prevents type-changing effects from treating this as a power boost.
     @powerBoost = false
     return proto_type
-  end
-end
-  #===============================================================================
-# Proto Code cursor graphic hook
-#-------------------------------------------------------------------------------
-# Redirects the existing Mega cursor graphic to the Proto cursor graphic.
-# This works because Proto Code currently uses the existing Mega special-button
-# slot in the Fight Menu.
-#===============================================================================
-class AnimatedBitmap
-  if !method_defined?(:proto_code_cursor_original_initialize)
-    alias proto_code_cursor_original_initialize initialize
-  end
-
-  def initialize(file, *args)
-    if defined?(ProtoCode) &&
-       ProtoCode.const_defined?(:REPLACE_MEGA_CURSOR_WITH_PROTO) &&
-       ProtoCode::REPLACE_MEGA_CURSOR_WITH_PROTO &&
-       file == "Graphics/UI/Battle/cursor_mega"
-
-      proto_cursor = ProtoCode::PROTO_CURSOR_GRAPHIC
-      file = proto_cursor if pbResolveBitmap(proto_cursor)
-    end
-
-    proto_code_cursor_original_initialize(file, *args)
   end
 end
