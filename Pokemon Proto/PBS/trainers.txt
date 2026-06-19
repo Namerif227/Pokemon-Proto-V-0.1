@@ -118,7 +118,7 @@ Pokemon = BLASTOISE,63
     Item = SITRUSBERRY
 #-------------------------------
 [LASS,Stat Tester]
-LoseText = Did you fix it yet!
-Pokemon = SMEARGLE,10
-    Moves = QUIVERDANCE
-    Ability = OWNTEMPO
+LoseText = The energy is stabilizing...
+Pokemon = RATICATE,35
+    Form = 2
+    Moves = CRUNCH,POISONFANG,SUCKERPUNCH,SUPERFANG

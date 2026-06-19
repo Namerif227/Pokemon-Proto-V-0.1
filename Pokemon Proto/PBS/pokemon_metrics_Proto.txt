@@ -1,0 +1,12 @@
+#-------------------------------
+[RATICATE,3]
+BackSprite = 0,56
+FrontSprite = 0,26
+ShadowX = 0
+ShadowSize = 2
+#-------------------------------
+[TEPIG,1]
+BackSprite = 0,56
+FrontSprite = 0,35
+ShadowX = 0
+ShadowSize = 1
