@@ -52,6 +52,34 @@ module ProtoCode
 PROTO_CURSOR_GRAPHIC = "Graphics/UI/Battle/cursor_proto"
 
 #-----------------------------------------------------------------------------
+# Proto Capsule item graphics
+#-----------------------------------------------------------------------------
+# This automatically turns:
+#   :FIREPROTOCAPSULE
+#
+# Into:
+#   Graphics/Items/FIREPROTOCAPSULE.png
+#
+# Do not include .png in the path.
+#-----------------------------------------------------------------------------
+PROTO_CAPSULE_GRAPHIC_FOLDER = "Graphics/Items"
+
+def self.capsule_graphic_path(item_id)
+  return nil if !item_id
+  return nil if !capsule_type(item_id)
+
+  path = "#{PROTO_CAPSULE_GRAPHIC_FOLDER}/#{item_id}"
+  return path if pbResolveBitmap(path)
+
+  return nil
+end
+
+def self.battler_capsule_graphic_path(battler)
+  return nil if !battler
+  return capsule_graphic_path(battler.item_id)
+end
+
+#-----------------------------------------------------------------------------
 # Permanently consumes a Proto Capsule.
 # This is stronger than normal pbConsumeItem because Proto Capsules should behave
 # more like one-use battle items, not recoverable held items.

@@ -122,3 +122,9 @@ LoseText = The energy is stabilizing...
 Pokemon = RATICATE,35
     Form = 2
     Moves = CRUNCH,POISONFANG,SUCKERPUNCH,SUPERFANG
+#-------------------------------
+[BUGCATCHER,Loser]
+LoseText = Please come back dont leave me in this mortal coil!
+Pokemon = WEEDLE,10
+Pokemon = KAKUNA,11
+#-------------------------------

@@ -1,6 +1,6 @@
 ﻿# See the documentation on the wiki to learn how to edit this file.
 #-------------------------------
-# Betula Town (33) - Route 1 (5)
-33,South,14,5,North,0
-# Route 1 (5) - Madera Town (6)
-5,92,6,6,0,0
+# Route 1 (5) - Betula Town (33)
+5,North,0,33,South,0
+# Betula Town (33) - Madera Town (6)
+33,106,34,6,0,0
