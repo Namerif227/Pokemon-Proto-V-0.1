@@ -160,4 +160,18 @@ module QuestModule
     :RewardString => "Food, glorious food!"
   }
 
+  VendForAll = {
+    :ID => "13",
+    :Name => "Vend for All",
+    :QuestGiver => "Jatlo",
+    :Stage1 => "Find more strange vending machines.",
+    :Stage2 => "Find the next strange Vending Machine.",
+    :Location1 => "Not Implimented yet.",
+    :Location2 => "Not Implimented yet.",
+    :StageLabel1 => "1",
+    :StageLabel2 => "2",
+    :QuestDescription => "A strange man named Jatlo found a strange vending machines where definitely shouldn't be. Search Iskara for more of these odd machines.",
+    :RewardString => "???"
+  }
+
 end
